@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.multiplica.examen.dto.Alumno;
 import com.multiplica.examen.dto.Curso;
 import com.multiplica.examen.dto.Parametros;
 import com.multiplica.examen.model.ModelResponse;
@@ -43,8 +45,9 @@ public class CursoController {
 	}
 	
 	@RequestMapping(value = "/agregar-alumno", method = RequestMethod.POST)
-	public ModelResponse agregarAlumno(@RequestBody Parametros parametros ) {
-		return cursoService.agregarAlumno(parametros);
+	public ModelResponse agregarAlumno(@RequestParam(value = "idCurso") String idCurso,
+			@RequestBody Alumno alumno ) {
+		return cursoService.agregarAlumno(idCurso, alumno);
 	}
 	
 	@RequestMapping(value = "/eliminar-alumno", method = RequestMethod.POST)

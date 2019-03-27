@@ -8,9 +8,11 @@ import { ConfirmDialogModule } from 'primeng/primeng';
 import { TableModule } from 'primeng/table';
 import { DialogModule} from 'primeng/dialog';
 import { EditorModule } from 'primeng/editor';
+import { CoreModule } from './core/core.module';
 import { InputTextModule} from 'primeng/inputtext';
 import { CursosComponent } from './cursos/cursos.component';
 import { HttpClientModule } from '@angular/common/http';
+import { NotificationService } from './core/components/notification/notification.service';
 
 @NgModule({
   declarations: [
@@ -26,10 +28,11 @@ import { HttpClientModule } from '@angular/common/http';
     TableModule,
     DialogModule,
     EditorModule,
+    CoreModule,
     InputTextModule,
     HttpClientModule
   ],
-  providers: [],
+  providers: [NotificationService],  
   bootstrap: [AppComponent]
 })
 export class AppModule { }

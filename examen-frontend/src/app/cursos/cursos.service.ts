@@ -6,7 +6,7 @@ import { RespuestaService } from '../entity/respuestaService';
 export class CursosService {  
   constructor(private http: HttpClient) { }
   urlMultiplica = environment.urlMultiplica;
-  getCursos(desde: number, hasta: number) {
+  getCursos() {
     let headers = new HttpHeaders();    
     headers = headers.append('Content-Type', 'application/json; charset=utf-8');
     let params = new HttpParams();
@@ -47,6 +47,15 @@ export class CursosService {
       'idAlumno': idAlumno
     };
     return this.http.post<RespuestaService>(url, JSON.stringify(parametros), { headers: headers });
+  }
+
+  agregarAlumno(data, idCurso:string) {
+    let headers = new HttpHeaders();    
+    headers = headers.append('Content-Type', 'application/json; charset=utf-8');
+    let params = new HttpParams();   
+    params = params.append('idCurso', idCurso);   
+    let url = `${this.urlMultiplica}/cursos/agregar-alumno`;
+    return this.http.post<RespuestaService>(url, data,{ headers, params });
   }
 }
 

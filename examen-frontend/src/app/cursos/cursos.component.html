@@ -9,9 +9,9 @@
       </div>
   </div>
 
-  <p-table [value]="rowsCursos" class="table table-hover" [lazy]="true" dataKey="IdCurso" [columns]="cols" [rows]="page.sizePerPage"
-      #dataTableComp selectionMode="multiple" (onLazyLoad)="loadSolicityLazy($event)" [totalRecords]="page.totalElements"
-      [(selection)]="selectedSols" (loading)="isLoading" [responsive]="true" [paginator]="false">
+  <p-table [value]="rowsCursos" class="table table-hover" [lazy]="true" [columns]="cols" [rows]="page.sizePerPage"
+      #dataTableComp selectionMode="single" (onLazyLoad)="loadSolicityLazy($event)" [totalRecords]="page.totalElements"
+      [(selection)]="selectedCurso" (loading)="isLoading" [responsive]="true" [paginator]="false">
       <ng-template pTemplate="header">
           <tr align="center">             
               <th style="width: 4.5em">Codigo</th>
@@ -24,7 +24,7 @@
           </tr>
       </ng-template>
       <ng-template pTemplate="body" let-row>
-          <tr>             
+          <tr >             
               <td align="center">{{row.codigo}}</td>
               <td align="center">{{row.nombre}}</td>
               <td align="center">{{row.descripcion}}</td>
@@ -32,20 +32,20 @@
               <td align="center">
                   <ng-container>
                       <button type="button" title="Editar" (click)="editar(row)" class="btn btn-primary">
-                          <i class="fa fa-caret-square-o-right"></i>
+                          <i class="fa fa-edit"></i>
                       </button>
                   </ng-container>
               </td>
               <td align="center">
                   <ng-container>
-                      <button id="btnRepF1" type="button" title="Ver Alumnos" class="btn btn-primary" (click)="listarAlumnos(row)">
-                          <i class="fa fa-cloud-download"></i>
+                      <button id="btnRepF1" type="button" title="Ver Alumnos" class="btn btn-primary" (click)="verAlumnos(row)">
+                          <i class="fa fa-eye"></i>
                       </button>
                   </ng-container>
               </td>
               <td align="center">
                   <ng-container >
-                      <button type="button" title="Anular" class="btn btn-primary" (click)="anular(row._id)">
+                      <button type="button" title="Anular" class="btn btn-primary" (click)="anular(row)">
                           <i class="fa fa-close"></i>
                       </button>
                   </ng-container>
@@ -139,13 +139,13 @@
     </form>
 </p-dialog>
 
-<p-dialog baseZIndex="100" class="dialogHeader" [(visible)]="displayModalAlumnos" modal="modal" width="800" [responsive]="true"
+<p-dialog baseZIndex="100" class="dialogHeader" [(visible)]="displayModalAlumnos" modal="modal" width="900" [responsive]="true"
     [draggable]="false">
     <p-header class="dialogHeader">
         {{titleModal}}
     </p-header>
     <div class="main-content">
-    <p-table [value]="rowsAlumnos" class="table table-hover" [rows]="page.sizePerPage" 
+    <p-table [value]="rowsAlumnos" class="table table-hover" selectionMode="single" [(selection)]="selectedCar" [rows]="page.sizePerPage" 
       #dataTableComp [totalRecords]="page.totalElements"
       [responsive]="true" [paginator]="false">
       <ng-template pTemplate="header">
@@ -168,10 +168,10 @@
               <td align="center">{{row.email}}</td>
               <td align="center">{{row.direccion}}</td>        
               <td align="center">
-                  <ng-container >
-                      <button type="button" title="Anular" class="btn btn-primary" (click)="eliminarAlumno(row._id)">
-                          <i class="fa fa-close"></i>
-                      </button>
+                  <ng-container >                  
+                    <button type="button" title="Anular" class="btn btn-primary" (click)="eliminarAlumno(row._id)">
+                        <i class="fa fa-close"></i>
+                    </button>
                   </ng-container>
               </td>           
           </tr>
@@ -187,16 +187,81 @@
         </div>
     </div>
 </div>
-<div align="center">       
+<div align="center">    
+        <button class="btn-afp btn-afp-blue" type="button" (click)="showModalAgregarAlumno(null)">
+                <i class="fa fa-plus"></i> Agregar Alumno
+        </button>   
         <button class="btn-afp btn-afp-light-blue" type="button" (click)="displayModalAlumnos=false;isPreview=false">
             <i class="fa fa-close"></i> Cerrar
         </button>
     </div>
 </p-dialog>
 
+<p-dialog baseZIndex="100" class="dialogHeader" [(visible)]="displayModalAddAlumno" modal="modal" width="600" [responsive]="true"
+    [draggable]="false">
+    <p-header class="dialogHeader">
+        {{titleModalAddAlumno}}
+    </p-header>
+    <form #form2="ngForm" (ngSubmit)="agregarAlumno(form2.value)">
+        <div class="col-sm-12">
+            <div class="form-group row">
+                <label for="nombres" class="col-4 col-form-label label-afp">Nombres</label>
+                <div class="col-8">
+                    <input required type="text" pInputText id="nombres" name="nombres" #nombres="ngModel" [ngModel]="nombresAlumno"/>               
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="apellidos" class="col-4 col-form-label label-afp">Apellidos</label>
+                <div class="col-8">
+                    <input required type="text" pInputText id="apellidos" name="apellidos" #apellidos="ngModel" [ngModel]="apellidosAlumno"/>               
+                </div>
+            </div>
+
+            <div class="form-group row">
+                    <label for="telefono" class="col-4 col-form-label label-afp">Teléfono</label>
+                    <div class="col-8">
+                        <input required type="text" pInputText id="telefono" name="telefono" #telefono="ngModel" [ngModel]="telefonoAlumno"/>          
+                    
+                    </div>
+            </div>
+            <div class="form-group row">
+                <label for="fechaNacimiento" class="col-4 col-form-label label-afp">Fecha de Nacimiento</label>
+                <div class="col-8">
+                    <input required type="text" pInputText id="fechaNacimiento" name="fechaNacimiento" #fechaNacimiento="ngModel" [ngModel]="fechaNacimientoAlumno"/>      
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="email" class="col-4 col-form-label label-afp">Email</label>
+                <div class="col-8">
+                    <input required type="text" pInputText id="email" name="email" #email="ngModel" [ngModel]="emailAlumno"/>      
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="direccion" class="col-4 col-form-label label-afp">Dirección</label>
+                <div class="col-8">
+                    <input required type="text" pInputText id="direccion" name="direccion" #direccion="ngModel" [ngModel]="direccionAlumno"/>      
+                </div>
+            </div>
+        </div>
+        <div align="center">
+            <button class="btn-afp btn-afp-blue" type="submit">
+                <i class="fa fa-check"></i> Guardar
+            </button>
+            <button class="btn-afp btn-afp-light-blue" type="button" [disabled]="isPreview" (click)="displayModalAddAlumno=false;isPreview=false">
+                <i class="fa fa-close"></i> Cancelar
+            </button>
+        </div>
+        <hr>
+        <p-footer> </p-footer>
+    </form>
+</p-dialog>
 <p-confirmDialog header="Confirmación de Anulación" icon="fa fa-question-circle" width="425" #cd>
         <p-footer>
             <button type="button" pButton icon="fa-check" label="Si" (click)="cd.accept()"></button>
             <button type="button" pButton icon="fa-close" label="No" (click)="cd.reject()"></button>
         </p-footer>
 </p-confirmDialog>
+<app-notification></app-notification>

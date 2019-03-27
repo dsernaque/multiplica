@@ -5,6 +5,7 @@ import { Curso } from '../entity/Curso';
 import { Alumno } from '../entity/Alumno';
 import { CursosService } from './cursos.service';
 import { RespuestaService } from '../entity/RespuestaService';
+import { NotificationService } from '../core/components/notification/notification.service';
 @Component({
   selector: 'app-cursos',
   templateUrl: './cursos.component.html',
@@ -20,7 +21,7 @@ export class CursosComponent implements OnInit {
   idCurso: string;
   page = { sizePerPage: 10, totalElements: 0, index: 0, rows: 0 };
   isLoading = false;
-  selectedSols: any[];
+  selectedCurso: Curso;
   cols: any[];
   titleModal: string;
   displayModal = false;
@@ -32,10 +33,21 @@ export class CursosComponent implements OnInit {
 
   rowCurso:Curso;
   rowsAlumnos: Alumno[];
+  selectedAlumno: Alumno;
   displayModalAlumnos= false;
+  nombresAlumno:string;
+  apellidosAlumno:string;
+  telefonoAlumno:string;
+  fechaNacimientoAlumno:string;
+  emailAlumno:string;
+  direccionAlumno:string;
+  titleModalAddAlumno:string;
+
+  displayModalAddAlumno= false;
   constructor(
     private CursosService: CursosService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit() {
@@ -46,90 +58,75 @@ export class CursosComponent implements OnInit {
   }
 
   listarCursos(params) { 
-    this.isLoading = true;
-    let desde = (params.first | 0) + 1;
-    let hasta = desde + (params.rows | 0) - 1;     
+    this.isLoading = true;       
     this.showModalProgressBar();
-    this.CursosService.getCursos(desde, hasta).subscribe(
+    this.CursosService.getCursos().subscribe(
       data => {
         this.hideModalProgressBar();
         this.response = new RespuestaService(null, null, null,null,null);
         this.response = data;
-        console.log("respuesta service: " + data);
         if (this.response.codigo=='1'){         
-          this.rowsCursos = this.response.cursos;     
-          console.log("cursos: " + this.rowsCursos[0].codigo); 
+          this.rowsCursos = this.response.cursos;
           this.page.totalElements = this.response.cantRegistros;     
         } else {
-         // this.notificationService.notify('warn', 'Listar Solicitud', 'Ocurrió un error.' );
-          console.log("Ocurrió un error.");
+          this.notificationService.notify('warn', 'Listar Cursos', 'Ocurrió un error.' );        
         }         
       },
       error => {
         this.hideModalProgressBar();
-        //this.notificationService.notify('error','Listar Solicitud PML', 'Ocurrió un error'); 
-        console.log("Ocurrió un error.");         
+        this.notificationService.notify('error','Listar Cursos', 'Ocurrió un error');         
       }
     );
   }
 
   onSubmit(model) {   
-    if (!model.codigo || !model.nombre || !model.descripcion|| !model.anio) {
-      console.log("Campo requerido");
-      //this.notificationService.notify('warn', 'Campo requerido', 'Ingrese la descripción.');
+    if (!model.codigo || !model.nombre || !model.descripcion|| !model.anio) {     
+      this.notificationService.notify('warn', 'Campo requerido', 'Complete todos los campos');
     } else { 
       model._id= this.idCurso;
-      model.alumnos_ids=this.alumnosCurso;     
-      console.log("ID CRSO: "+ model._id);   
+      model.alumnos_ids=this.alumnosCurso;       
       this.CursosService.saveCurso(model).subscribe(data => {          
       this.response = new RespuestaService(null, null, null,null,null);
-      this.response = data;
-      console.log("respuesta de servicio registar: " + data);       
-      if (this.response.codigo == '1') {
-        console.log("SE CREO CORRECTAMENTE");
-        //this.notificationService.notify('success', 'Registrar Solicitud PML', 'Datos grabados correctamente.');
+      this.response = data;  
+      if (this.response.codigo == '1') {      
+        this.notificationService.notify('success', 'Registrar Curso', 'Datos grabados correctamente.');
         this.page.index = 0;
         this.displayModal = false;
         this.dataTableComponent.reset();
       }
       else {
-        //this.notificationService.notify('error', 'Registrar Solicitud PML', this.response.mensaje.toString());
-        console.log("Ocurrió un error.");
+        this.notificationService.notify('error', 'Registrar Curso', this.response.mensaje.toString());      
       }  
       },
       error => {
-        //this.notificationService.notify('error','Registrar Solicitud PML', 'Ocurrió un error');      
-        console.log("Ocurrió un error.");    
+        this.notificationService.notify('error','Registrar Curso', 'Ocurrió un error');        
       }
       );
     }   
   }
 
-  anular(idCurso: string){
-    console.log("metodo anular");
+  anular(row){   
+    this.idCurso= row._id;
     this.confirmationService.confirm({
       message: 'Desea anular el curso?',
       header: 'Confirmación',
       icon: 'fa fa-question-circle',
       accept: () => {
         this.showModalProgressBar();
-        this.CursosService.anularCurso(idCurso).subscribe(data => {
+        this.CursosService.anularCurso(this.idCurso).subscribe(data => {
           this.hideModalProgressBar();
           this.response = new RespuestaService(null, null, null,null,null);
           this.response = data;
           if (this.response.codigo = '1'){
-            //this.notificationService.notify('success', 'Anular Solicitud', 'Se anuló la solicitud correctamente');
-            console.log("se anulo");
+            this.notificationService.notify('success', 'Anular Curso', 'Se anuló el curso correctamente');         
             this.dataTableComponent.reset();          
           } else {
-            //this.notificationService.notify('error', 'Anular Solicitud', 'Ocurrio un error.');
-            console.log("error al anular");
+            this.notificationService.notify('error', 'Anular Curso', 'Ocurrio un error.');          
           }
         },
         error =>{
           this.hideModalProgressBar();
-          //this.notificationService.notify('error', 'Anular Solicitud', 'Ocurrio un error.');
-          console.log("error al anular ERRORR");
+          this.notificationService.notify('error', 'Anular Curso', 'Ocurrio un error.');        
         });
       },
       reject: () => {          
@@ -137,52 +134,74 @@ export class CursosComponent implements OnInit {
     });
   }
 
-  listarAlumnos(row) { 
-    this.idCurso=row._id;  
-    console.log("listar alumnos de curso: " + this.idCurso);
+  verAlumnos(row){
+    this.idCurso=row._id; 
+    this.listarAlumnos();
+    this.showModalAlumnos();
+  }
+
+  listarAlumnos() {     
     this.CursosService.getAlumnos(this.idCurso).subscribe(
       data => {      
         this.response = new RespuestaService(null, null, null,null,null);
-        this.response = data;
-        console.log("respuesta service: " + data);
+        this.response = data;    
         if (this.response.codigo=='1'){         
           this.rowsAlumnos = this.response.alumnos;              
           this.page.totalElements = this.response.cantRegistros;    
-          this.showModalAlumnos();
+          //this.showModalAlumnos();
         } else {
-         // this.notificationService.notify('warn', 'Listar Solicitud', 'Ocurrió un error.' );
-          console.log("Ocurrió un error.");
+          this.notificationService.notify('warn', 'Listar Alumnos', 'Ocurrió un error.' );         
         }         
       },
       error => {
         this.hideModalProgressBar();
-        //this.notificationService.notify('error','Listar Solicitud PML', 'Ocurrió un error'); 
-        console.log("Ocurrió un error.");         
+        this.notificationService.notify('error','Listar Alumnos', 'Ocurrió un error');            
       }
     );
   }
 
-  eliminarAlumno(idAlumno: string){  
-    console.log("metodo anular alumno");
+  eliminarAlumno(idAlumno: string){     
     this.showModalProgressBar();
     this.CursosService.eliminarAlumno(this.idCurso,idAlumno).subscribe(data => {
       this.hideModalProgressBar();
       this.response = new RespuestaService(null, null, null,null,null);
       this.response = data;
       if (this.response.codigo = '1'){
-        //this.notificationService.notify('success', 'Anular Solicitud', 'Se anuló la solicitud correctamente');
-        console.log("se elimino el alumno");
-        this.dataTableComponent.reset();          
+        this.notificationService.notify('success', 'Eliminar Alumno', 'Se eliminó al alumno del Curso ');    
+       this.listarAlumnos();   
       } else {
-        //this.notificationService.notify('error', 'Anular Solicitud', 'Ocurrio un error.');
-        console.log("error al anular");
+        this.notificationService.notify('error', 'Eliminar Alumno', 'Ocurrio un error.');       
       }
     },
     error =>{
       this.hideModalProgressBar();
-      //this.notificationService.notify('error', 'Anular Solicitud', 'Ocurrio un error.');
-      console.log("error al anular alumno ERRORR");
+      this.notificationService.notify('error', 'Eliminar Alumno', 'Ocurrio un error.');     
     });
+  }
+
+  agregarAlumno(model) {   
+    if (!model.nombres || !model.apellidos || !model.telefono|| !model.fechaNacimiento || !model.email|| !model.direccion) {     
+      this.notificationService.notify('warn', 'Campo requerido', 'Complete todos los campos');
+    } else {   
+      this.CursosService.agregarAlumno(model,this.idCurso).subscribe(data => {          
+      this.response = new RespuestaService(null, null, null,null,null);
+      this.response = data;  
+      if (this.response.codigo == '1') {      
+        this.notificationService.notify('success', 'Agregar Alumno', 'Alumno registrado correctamente.');
+        this.page.index = 0;
+        this.displayModalAddAlumno = false;       
+        this.listarAlumnos();      
+        this.limpiar();   
+      }
+      else {
+        this.notificationService.notify('error', 'Agregar Alumno', this.response.mensaje.toString());      
+      }  
+      },
+      error => {
+        this.notificationService.notify('error','Agregar Alumno', 'Ocurrió un error');        
+      }
+      );
+    }   
   }
 
   editar(row) { 
@@ -193,6 +212,15 @@ export class CursosComponent implements OnInit {
     this.anioCurso= row.anio;
     this.descripcionCurso=row.descripcion;
     this.showModal(row);   
+  }
+
+  limpiar(){
+    this.nombresAlumno='';
+    this.apellidosAlumno='';
+    this.telefonoAlumno='';
+    this.fechaNacimientoAlumno='';
+    this.emailAlumno='';
+    this.direccionAlumno='';
   }
 
   showModal(row) {
@@ -208,6 +236,12 @@ export class CursosComponent implements OnInit {
     this.titleModal = 'Alumnos Inscritos';
     this.isPreview = false;
     this.displayModalAlumnos = true;
+  }
+
+  showModalAgregarAlumno() {    
+    this.titleModalAddAlumno = 'Agregar Alumno';
+    this.isPreview = false;
+    this.displayModalAddAlumno = true;
   }
 
   showModalProgressBar() {

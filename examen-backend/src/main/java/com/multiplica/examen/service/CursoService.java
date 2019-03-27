@@ -64,10 +64,17 @@ public class CursoService {
 		return response;
 	}
 	
-	public ModelResponse agregarAlumno(Parametros parametros ) {		
-		Alumno alumno=alumnoDao.findBy_id(parametros.getIdAlumno());
-		Curso curso=cursoDao.findBy_id(parametros.getIdCurso());
-		curso.getAlumnos_ids().add(alumno.get_id());
+	public ModelResponse agregarAlumno(String idCurso,Alumno alumno ) {		
+		alumno.set_id(ObjectId.get());
+		alumnoDao.save(alumno);		
+
+		Curso curso=cursoDao.findBy_id(new ObjectId(idCurso));
+		List<String> listaAlumnos = curso.getAlumnos_ids();
+		if (listaAlumnos== null) {
+			listaAlumnos= new ArrayList<>();
+		}
+		listaAlumnos.add(alumno.get_id());
+		curso.setAlumnos_ids(listaAlumnos);
 		cursoDao.save(curso);
 		ModelResponse response= new ModelResponse();
 		response.setCodigo(Constantes.CODIGO_RESPUESTA_EXITO);
